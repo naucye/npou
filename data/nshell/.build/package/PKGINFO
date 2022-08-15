@@ -1,0 +1,6 @@
+name:nshell
+developer:naucye
+version:100
+arch:aarch64
+describe:跑命令
+depend: pad
