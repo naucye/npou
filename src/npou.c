@@ -1,6 +1,5 @@
 #include "npou.h"
 
-char URL[256] = "http://127.0.0.1:6477";
 int main(int argc, char* argv[]) {
     char arch[10];
     execmd("uname -m",arch);
@@ -9,7 +8,8 @@ int main(int argc, char* argv[]) {
     int npu_db_result;
     char **depend = {0};
 	for (int i = 1; i < argc; i++) {
-		if(strcmp("-S", argv[i])){
+		if(strcmp("-S", argv[i]) == 0){
+		    i++;
             printf("Query database... ");
             for (int k = 0; k + i < argc; k++) {
                 if (npu_db_query(npu_db, argv[i + k])) {
@@ -52,7 +52,6 @@ int main(int argc, char* argv[]) {
 
 		    printf("\n");
 		    for (int k = 0; k + i < argc; k++) {
-                //printf("Install %s ...\n", argv[i +k]);
 		        npu_pkg_get(arch, argv[i + k]);
 		    }
 
@@ -77,10 +76,10 @@ int main(int argc, char* argv[]) {
                     printf("on\n");
                 }
             }
-
             printf("Processing package...\n");
             printf("Install Success!");
-		    i++;
+		} else if (strcmp("-Ud", argv[i]) == 0){
+            npu_update_db(arch);
 		}
 	}
 	return 0;
@@ -91,9 +90,9 @@ int execmd(char *cmd, char *result) {
 	if(!pipe)
 		return 0;
 	
-	char buffer[128] = {0};
+	char buffer[1024] = {0};
 	while(!feof(pipe)) {
-		if(fgets(buffer, 128, pipe))
+		if(fgets(buffer, 1024, pipe))
 			strcat(result, buffer);
 	}
 	pclose(pipe);
@@ -151,7 +150,6 @@ int npu_pkg_install(char *npu){
 }
 
 int npu_pkg_get(char *arch, char *npu){
-    char httpurl[256] = {0};
     char path[256] = {0};
     char c[1024] = {0};
 
@@ -160,22 +158,41 @@ int npu_pkg_get(char *arch, char *npu){
         *tmp = '\0';
     }
 
+    FILE *fp=fopen("/etc/npou/mirror", "r");
+    char mirror_cmd[256] = {0};
+    char mirror[256] = {0};
+    char mirror_data[1024] = {0};
+    ////////////////////--BUG
+    fgets(mirror_data, 1024, fp);
+    sprintf(mirror_cmd, "ARCH=%s;PACKAGE=%s.npu;echo -n %s", arch, npu, mirror_data);
+    execmd(mirror_cmd, mirror);
     strcpy(c, "mkdir -vp /var/npou/cache /var/npou/packages /usr/share/npou /etc/npou");
     system(c);
-
-    strcat(httpurl, URL);
-    strcat(httpurl, "/");
-    strcat(httpurl, arch);
-    strcat(httpurl, "/");
-    strcat(httpurl, npu);
-    strcat(httpurl, ".npu");
 
     strcat(path, "/var/npou/cache");
     strcat(path, "/");
     strcat(path, npu);
     strcat(path, ".npu");
+    http_get(mirror, path);
+}
 
-    http_get(httpurl, path);
+int npu_update_db(char *arch) {
+    printf("Synchronizing database...\n");
+    char *tmp = NULL;
+    if ((tmp = strstr(arch, "\n"))){
+        *tmp = '\0';
+    }
+
+    FILE *fp=fopen("/etc/npou/mirror", "rb+");
+    char mirror_cmd[256] = {0};
+    char mirror[256] = {0};
+    char c[1024] = {0};
+    sprintf(mirror_cmd, "ARCH=%s;PACKAGE=%s;echo -n %s", arch, "core.db", read_content(fp, read_bin_size(fp)));
+    execmd(mirror_cmd, mirror);
+    strcpy(c, "mkdir -p /var/npou/db");
+    system(c);
+    http_get(mirror, "/var/npou/db/core.db");
+    printf("Success!");
 }
 
 int npu_pkg_remove(char *arch, char *npu){

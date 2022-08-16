@@ -17,6 +17,8 @@ int execmd(char* cmd,char* result);
 
 int npu_pkg_install(char *npu);
 
+int npu_update_db(char *arch);
+
 int npu_pkg_get(char *arch, char *npu);
 
 int npu_db_query(struct Npu_DB *npu_db, char *package);

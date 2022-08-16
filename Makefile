@@ -8,8 +8,11 @@ TARGET_LIB=lib
 TARGET_BIN=bin
 TARGET=$(TARGET_LIB)/libnpu.so $(TARGET_LIB)/libnpudb.so $(TARGET_LIB)/libnpuhttp.so $(TARGET_BIN)/npufu.o $(TARGET_BIN)/npusu.o $(TARGET_BIN)/npurc.o  $(TARGET_LIB)/libnpusu.a $(TARGET_LIB)/libnpufu.a $(TARGET_LIB)/libnpurc.a $(TARGET_PKG)/npou $(TARGET_PKG)/npu $(TARGET_PKG)/npudb
 install: build
-	cp $(TARGET_LIB)/*.so /usr/lib
-	cp $(TARGET_PKG)/* /usr/bin
+	@cp $(TARGET_LIB)/*.so /usr/lib
+	@cp $(TARGET_PKG)/* /usr/bin
+	@mkdir -p /var/npou /etc/npou/
+	@cat mirror > /etc/npou/mirror
+	@echo "Success!"
 
 init:
 	@mkdir -p $(TARGET_LIB)
@@ -60,3 +63,17 @@ clear:
 	@rm -rvf $(TARGET_BIN)
 	@rm -rvf $(TARGET_LIB)
 	@rm -rvf $(TARGET_PKG)
+
+uninstall:
+	@rm -rfv /usr/lib/libnpu.so
+	@rm -rfv /usr/lib/libnpudb.so
+	@rm -rfv /usr/lib/libnpuhttp.so
+	@rm -rfv /usr/bin/npou
+	@rm -rfv /usr/bin/npu
+	@rm -rfv /usr/bin/npudb
+	@rm -rfv /var/npou
+	@rm -rfv /etc/npou
+	@echo "Uninstall success！"
+
+remove:
+	@rm -rfv ./*

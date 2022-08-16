@@ -16,4 +16,8 @@ int equals(const char *str1, const char *str2);
 
 char** str_split(char *str, char *delimiter, int *length);
 
+char* strsub(char* str, int start, int end);
+
+char* strep(char* str,char* src,char* des);
+
 #endif //NPOU_STRING_UTIL_H

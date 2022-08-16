@@ -52,3 +52,49 @@ char** str_split(char *str, char *delimiter, int *length) {
     res[resI] = NULL; //字符串数组中结束标志
     return res;
 }
+
+/*
+ 截取字符串
+@str 要被截取的字符串
+@start 从什么位置开始截取
+@end 到哪个位置结束截取
+*/
+char* strsub(char* str, int start, int end){
+
+    char* result = (char*)malloc((end - start)*sizeof(char));
+    str += start;
+    for (int i = 0; i < (end-start); i++)
+    {
+
+        result[i] = *str;
+        str++;
+
+    }
+    result[(end - start)] = '\0';
+    return result;
+}
+
+
+char* strep(char* str,char* src,char* des){
+    //返回的结果
+    char* result = (char*)malloc((strlen(str) - strlen(src) + strlen(des))*sizeof(char));
+
+    //先判断是否包被替换的字符串,返回的是要查找的字符串的首地址
+    char* pos = strstr(str,src);
+    if (!pos){
+        //如果不包含直接返回
+        return str;
+    }
+    //计算src的位置
+    int start_end = pos - str;
+    char* start = strsub(str, 0, start_end);
+
+    int end_start = start_end + strlen(src);
+    char* end = strsub(str, end_start, strlen(str));
+
+    strcpy(result, start);
+    strcat(result,des);
+    strcat(result,end);
+
+    return strep(result,src,des);
+}
